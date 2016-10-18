@@ -1,0 +1,139 @@
+# -*- mode: yaml -*-
+# vi: set ft=yaml:
+
+# Development project information
+project:
+  name: example
+  url: example.dev
+
+# Deployment configuration
+deployment:
+
+  # Git repository used for deployment
+  repository:
+    # The url of our Git repository
+    repo_url: https://github.com/themejuice/deploy-example.git
+    # The branch we want to deploy
+    branch: :master
+    # We want to use rsync for deployment (required)
+    scm: :rsync
+
+  # Deployment settings
+  settings:
+    # Number of releases we want to keep a history of. This allows us to rollback a deployment
+    # back to the last 5 releases.
+    keep_releases: 5
+    # Log format (see Capistrano documentation for additional options)
+    format: :pretty
+    # Log level (see Capistrano documentation for additional options)
+    log_level: :verbose
+    # We do not need to use sudo for our deployment
+    use_sudo: false
+    # SSH options (see Capistrano documentation for additional options)
+    ssh_options:
+      keys: ~/.ssh/id_rsa
+      forward_agent: true
+      paranoid: true
+    # Add additional directories to $PATH. This is useful if you're
+    #  on a shared hosting environment (i.e. GoDaddy) and you need
+    #  to use an executable such as wp-cli for database migration.
+    # default_env:
+    #   path: /opt/wp-cli/bin:$PATH
+
+  # Rsync-related options
+  rsync:
+    # Where we want to 'stage' our deployment, e.g. run our build system if we have one
+    stage: tmp/deploy
+    # Where we want to keep a cache of our deployments (cache = faster deploys)
+    cache: shared/deploy
+    # We're going to use Git as our version control system
+    scm: :git
+    # We only want to close with a depth of 1 when performing a `git clone` of our repository
+    depth: 1
+    # Options to pass to the rsync command (see Rsync documentation for additional options)
+    options:
+      - --recursive
+      - --delete
+      - --delete-excluded
+      - --exclude="Juicefile"
+      - --exclude=".git*"
+    # Run application build scripts (if any)
+    # install:
+    #   - npm install
+    #   - grunt build
+    # Run scripts before the deployment starts
+    # pre_scripts:
+    #   - touch .maintenance
+    # Run scripts before the deployment finishes
+    # post_scripts:
+    #   - rm .maintenance
+    #   - sudo service apache2 restart
+
+  # Slack integration (see: https://github.com/onthebeach/capistrano-slackify)
+  # slack:
+  #   url: https://hooks.slack.com/services/your-token
+  #   username: Deploybot
+  #   channel: "#devops"
+  #   emoji: ":rocket:"
+
+  # Deployment stages
+  stages:
+
+    # Our production stage
+    production:
+      server: 192.168.33.10       # Our production IP address
+      path: /var/www/example      # Path to directory we want to deploy to
+      user: deploy                # User we want to deploy as
+      url: example.com            # Our production domain
+      uploads: wp-content/uploads # Path to our uploads folder
+      tmp: tmp                    # Path to our temp directory
+      shared:                     # Shared files and folders
+        - wp-config.php           # Shared wp-config file
+        - some-directory/         # Shared directory (trailing slash = directory)
+      roles:                      # Roles for this stage (required)
+        - :web
+        - :app
+        - :db
+
+    # Our staging stage
+    # staging:
+    #   server: 192.168.33.10
+    #   path: /var/www/example-staging
+    #   user: deploy
+    #   url: staging.example.com
+    #   uploads: wp-content/uploads
+    #   tmp: tmp
+    #   shared:
+    #     - wp-config.php
+    #   roles:
+    #     - :web
+    #     - :app
+    #     - :db
+
+    # Another stage (stage names can be arbitrary)
+    # stage2:
+    #   server: 192.168.33.10
+    #   path: /var/www/example
+    #   user: deploy
+    #   url: stage2.example.com
+    #   uploads: wp-content/uploads
+    #   tmp: tmp
+    #   shared:
+    #     - wp-config.php
+    #   roles:
+    #     - :web
+    #     - :app
+    #     - :db
+
+    # Our Vagrant development environment
+    vagrant:
+      server: 192.168.13.37        # Our virtual machines IP address
+      path: /srv/www/tj-example    # The path to our project within the VM
+      user: vagrant                # SSH user
+      pass: vagrant                # SSH password
+      url: example.dev             # Our development domain
+      uploads: wp-content/uploads  # Path to our uploads directory
+      backup: backup               # Path to where we want to store DB backups
+      tmp: tmp                     # Path to our temp directory
+      roles:                       # Roles for this stage (required)
+        - :dev

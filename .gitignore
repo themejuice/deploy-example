@@ -1,0 +1,5 @@
+/wp-cli.local.yml
+/wp-config.php
+/wp-content/uploads/*
+/backup
+/tmp
